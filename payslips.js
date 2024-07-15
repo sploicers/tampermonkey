@@ -17,12 +17,8 @@
   const DOM_POLL_INTERVAL_MS = 500;
   const DEBUG = false;
 
-  const haveFollowedIframeLink =
-    window.localStorage.haveFollowedIframeLink ||
-    window.location.href.includes('ords/wss_vzbp');
-
+  const haveFollowedIframeLink = window.location.href.includes('ords/wss_vzbp');
   if (haveFollowedIframeLink) {
-    delete window.localStorage.haveFollowedIframeLink;
     const rowSelector = "table[summary='Pehistpay'] tr";
     waitForElementsBySelector(rowSelector, rows =>
       downloadAllPayslips(rows).catch(console.error));
@@ -46,7 +42,6 @@
   }
 
   function navigateToIframe(iframe) {
-    window.localStorage.haveFollowedIframeLink = true;
     window.location.href = iframe.src;
   }
 
