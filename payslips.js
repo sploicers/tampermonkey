@@ -22,6 +22,7 @@
     window.location.href.includes('ords/wss_vzbp');
 
   if (haveFollowedIframeLink) {
+    delete window.localStorage.haveFollowedIframeLink;
     const rowSelector = "table[summary='Pehistpay'] tr";
     waitForElementsBySelector(rowSelector, rows =>
       downloadAllPayslips(rows).catch(console.error));
@@ -32,7 +33,6 @@
   }
 
   async function downloadAllPayslips(tableRows) {
-    delete window.localStorage.haveFollowedIframeLink;
     const domParser = new DOMParser();
     addHtml2PdfScriptToPage();
 
