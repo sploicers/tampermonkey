@@ -58,7 +58,7 @@
     try {
       const {href: url, innerText: periodEndDate} = link;
       const filename = `${periodEndDate}.pdf`;
-      console.log(`About to download ${filename}. Dry run: ${DRY_RUN}`);
+      console.log(`About to download ${filename} (dry run: ${DRY_RUN}).`);
 
       if (!DRY_RUN) {
         const pageContent = await fetch(url).then(response => response.text());
@@ -78,37 +78,40 @@
     }
   }
 
-  function waitForElementsBySelector(querySelector) {
+  function waitForElement(checker, query) {
     return new Promise(resolve => {
       const poll = window.setInterval(inner, DOM_POLL_INTERVAL_MS);
       function inner() {
-        // DOM elements are returned in a NodeList, but we want just a normal JS array.
-        const elements = [...document.querySelectorAll(querySelector)];
-        const elementsReady = elements.length > 0;
-        if (elementsReady) {
+        const {result, ready} = checker(query);
+        if (ready) {
           window.clearInterval(poll);
-          resolve(elements);
+          resolve(result);
         } else {
-          console.log(`No matches in DOM for selector ${querySelector}. Retrying in ${DOM_POLL_INTERVAL_MS}ms.`);
+          console.log(`No matches in DOM for query "${query}". Retrying in ${DOM_POLL_INTERVAL_MS}ms.`);
         }
       }
     });
   }
 
+  function waitForElementsBySelector(selector) {
+    return waitForElement(getElementsBySelector, selector);
+  }
+
   function waitForElementById(id) {
-    return new Promise(resolve => {
-      const poll = window.setInterval(inner, DOM_POLL_INTERVAL_MS);
-      function inner() {
-        const element = document.getElementById(id);
-        const elementReady = element !== null;
-        if (elementReady) {
-          window.clearInterval(poll);
-          resolve(element);
-        } else {
-          console.log(`No matches in DOM for id ${id}. Retrying in ${DOM_POLL_INTERVAL_MS}ms.`);
-        }
-      }
-    });
+    return waitForElement(getElementById, id);
+  }
+
+  function getElementById(id) {
+    const result = document.getElementById(id);
+    const ready = result !== null;
+    return {result, ready};
+  }
+
+  function getElementsBySelector(selector) {
+    // document.querySelectorAll returns a NodeList, but we want just a normal JS array.
+    const result = [...document.querySelectorAll(selector)];
+    const ready = result.length > 0;
+    return {result, ready};
   }
 
   // We make use of the "html2pdf" NPM package - add its bundle to the page in a <script> tag, so
