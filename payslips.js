@@ -15,10 +15,13 @@
 	const TABLE_HEADER_ROW_COUNT = 2;
 	const TABLE_ROW_CHILD_NODE_INDEX = 5;
 	const DOM_POLL_INTERVAL_MS = 500;
+	const NUM_SIMULTANEOUS_DOWNLOADS = 5;
+	const DOWNLOAD_BATCH_DELAY_MS = 1000;
 	const DEBUG = false;
+	//https://payroll.ascenderpay.com/vzbp-wss/faces/WJ0000
 
-	const haveFollowedIframeLink = window.location.href.includes('ords/wss_vzbp');
-	if (haveFollowedIframeLink) {
+	const alreadyFollowedIframeLink = window.location.href.includes('ords/wss_vzbp');
+	if (alreadyFollowedIframeLink) {
 		const rowSelector = "table[summary='Pehistpay'] tr";
 		waitForElementsBySelector(rowSelector, rows =>
 			downloadAllPayslips(rows).catch(console.error));
@@ -38,7 +41,10 @@
 		const links = relevantRows.flatMap(row => [...row.childNodes][TABLE_ROW_CHILD_NODE_INDEX].childNodes[0]);
 		// Download.
 		debugBreakpoint();
-		await Promise.all(links.map(link => downloadPayslip(link, domParser)));
+		for (const chunk of chunkArray(links, NUM_SIMULTANEOUS_DOWNLOADS)) {
+			await Promise.all(chunk.map(link => downloadPayslip(link, domParser)));
+			await delayMs(DOWNLOAD_BATCH_DELAY_MS);
+		}
 	}
 
 	function navigateToIframe(iframe) {
@@ -89,6 +95,15 @@
 		document.head.appendChild(script);
 	}
 
+	function* chunkArray(items, n) {
+		for (let i = 0; i < items.length; i += n) {
+			yield items.slice(i, i + n);
+		}
+	}
+
+	function delayMs(ms) {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
 	function debugBreakpoint() {
 		if (DEBUG) debugger;
 	}
