@@ -47,7 +47,6 @@
     const links = relevantRows.flatMap(row => [...row.childNodes][TABLE_ROW_CHILD_NODE_INDEX].childNodes[0]);
     // Download.
     const domParser = new DOMParser();
-    addHtml2PdfScriptToPage();
     for (const chunk of chunkArray(links, MAX_SIMULTANEOUS_DOWNLOADS)) {
       await Promise.all(chunk.map(link => downloadSinglePayslip(link, domParser)));
       await delayMs(DOWNLOAD_BATCH_DELAY_MS);
@@ -112,15 +111,6 @@
     const result = [...document.querySelectorAll(selector)];
     const ready = result.length > 0;
     return {result, ready};
-  }
-
-  // We make use of the "html2pdf" NPM package - add its bundle to the page in a <script> tag, so
-  // that the 'html2pdf' function is accessible later.
-  function addHtml2PdfScriptToPage() {
-    const script = document.createElement('script');
-    script.type = 'application/javascript';
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-    document.head.appendChild(script);
   }
 
   function* chunkArray(items, n) {
