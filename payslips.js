@@ -59,27 +59,7 @@
 			if (!DRY_RUN) {
 				const pageContent = await fetch(url).then(response => response.text());
 				const document = domParser.parseFromString(pageContent, 'text/html').body;
-
-				const renderingOptions = {
-					image: {
-						type: 'png',
-						quality: 1,
-					},
-					html2canvas: {
-						scale: 2,
-						dpi: 300,
-						logging: false,
-					},
-					jsPDF: {
-						unit: 'in',
-						format: 'a4',
-						orientation: 'portrait'
-					},
-				};
-				const blob = await html2pdf(document)
-					.set(renderingOptions)
-					.output("blob", {filename});
-
+				const blob = await html2pdf(document).output("blob", filename);
 				return {blob, filename};
 			}
 
