@@ -59,7 +59,7 @@
 			if (!DRY_RUN) {
 				const pageContent = await fetch(url).then(response => response.text());
 				const document = domParser.parseFromString(pageContent, 'text/html').body;
-				const blob = await html2pdf(document).output("blob", filename);
+				const blob = await html2pdf().from(document).output("blob", filename);
 				return {blob, filename};
 			}
 
